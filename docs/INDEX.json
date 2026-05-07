@@ -1,0 +1,49 @@
+{
+  "docs": [
+    {
+      "path": "docs/architecture.md",
+      "title": "Architecture",
+      "summary": "System overview, route map, auth flow, and Supabase client split (server vs browser).",
+      "source_files": ["middleware.ts", "app/layout.tsx", "app/page.tsx", "app/(dashboard)/layout.tsx", "lib/supabase/client.ts", "lib/supabase/server.ts"],
+      "entry_points": ["middleware", "createClient (browser)", "createClient (server)"]
+    },
+    {
+      "path": "docs/database.md",
+      "title": "Database",
+      "summary": "journal_entries schema, RLS policies, moddatetime trigger, and upsert pattern.",
+      "source_files": ["supabase/migrations/001_initial.sql"],
+      "entry_points": ["journal_entries"]
+    },
+    {
+      "path": "docs/frontend.md",
+      "title": "Frontend",
+      "summary": "All components: Calendar, EntryEditor, VoiceRecorder, VideoEmbed, Navbar, SaveIndicator, and utility functions.",
+      "source_files": [
+        "app/(dashboard)/dashboard/page.tsx",
+        "app/(dashboard)/entry/[date]/page.tsx",
+        "components/journal/Calendar.tsx",
+        "components/journal/EntryEditor.tsx",
+        "components/journal/VoiceRecorder.tsx",
+        "components/journal/VideoEmbed.tsx",
+        "components/ui/Navbar.tsx",
+        "components/ui/SaveIndicator.tsx",
+        "lib/utils.ts"
+      ],
+      "entry_points": ["/dashboard", "/entry/[date]", "Calendar", "EntryEditor", "VoiceRecorder", "VideoEmbed"]
+    },
+    {
+      "path": "docs/integrations.md",
+      "title": "Integrations",
+      "summary": "Supabase auth and database setup, Web Speech API (no key needed), YouTube/Vimeo embed (no key needed), Vercel environment variables.",
+      "source_files": ["lib/supabase/client.ts", "lib/supabase/server.ts", "middleware.ts", ".env.local.example"],
+      "entry_points": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"]
+    },
+    {
+      "path": "docs/operations.md",
+      "title": "Operations",
+      "summary": "Local dev setup, manual Supabase/GitHub/Vercel checklist (not yet completed), post-deploy smoke tests, stack versions.",
+      "source_files": ["package.json", "next.config.mjs"],
+      "entry_points": ["npm run dev", "npm run build", "npm run lint"]
+    }
+  ]
+}

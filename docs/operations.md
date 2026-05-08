@@ -2,7 +2,7 @@
 title: Operations
 source_files: [package.json, next.config.mjs, tailwind.config.ts]
 entry_points: [npm run dev, npm run build, npm run lint]
-last_verified: 2026-05-07
+last_verified: 2026-05-08
 ---
 
 # Operations
@@ -31,17 +31,26 @@ npm run lint         # ESLint
 npx tsc --noEmit     # TypeScript type check
 ```
 
-## Manual Setup Checklist (not yet done)
+## Manual Setup Checklist
 
 These steps require human action and cannot be automated:
+
+### Google Cloud (for OAuth + Drive)
+
+- [ ] Go to console.cloud.google.com → create or select a project
+- [ ] Enable the Google Drive API (APIs & Services → Library)
+- [ ] Create OAuth 2.0 credentials (APIs & Services → Credentials → Create → OAuth client ID → Web application)
+- [ ] Add authorized redirect URI: `https://your-supabase-project.supabase.co/auth/v1/callback`
+- [ ] Copy Client ID and Client Secret into `.env.local` as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
 
 ### Supabase
 
 - [ ] Create a Supabase project at supabase.com
 - [ ] Copy Project URL and anon key into `journaling-app/.env.local`
 - [ ] Run `supabase/migrations/001_initial.sql` in Supabase SQL Editor
-- [ ] Verify `journal_entries` table exists with RLS enabled (shield icon in Table Editor)
-- [ ] Disable email confirmation: Auth → Email → uncheck "Confirm email"
+- [ ] Run `supabase/migrations/002_google_drive.sql` in Supabase SQL Editor
+- [ ] Verify both tables exist with RLS enabled (shield icon in Table Editor)
+- [ ] Enable Google OAuth provider: Auth → Providers → Google → paste Client ID and Client Secret
 - [ ] Add redirect URL `http://localhost:3000/**` in Auth → URL Configuration
 - [ ] Add redirect URL `https://your-app.vercel.app/**` in Auth → URL Configuration
 - [ ] Add redirect URL `https://*.vercel.app/**` in Auth → URL Configuration (covers preview deploys)
@@ -56,20 +65,24 @@ These steps require human action and cannot be automated:
 - [ ] Import the GitHub repo at vercel.com/new
 - [ ] Set `NEXT_PUBLIC_SUPABASE_URL` in Vercel → Settings → Environment Variables **before first deploy**
 - [ ] Set `NEXT_PUBLIC_SUPABASE_ANON_KEY` in Vercel → Settings → Environment Variables **before first deploy**
+- [ ] Set `GOOGLE_CLIENT_ID` in Vercel → Settings → Environment Variables **before first deploy**
+- [ ] Set `GOOGLE_CLIENT_SECRET` in Vercel → Settings → Environment Variables **before first deploy**
 - [ ] Trigger deploy
 - [ ] Add the Vercel production URL to Supabase Auth redirect URLs
+- [ ] Add the Vercel production URL to Google Cloud OAuth authorized redirect URIs
 
 ## Post-Deploy Smoke Tests
 
 Run these after the first Vercel deploy:
 
-- [ ] Sign up with a test email → lands on `/dashboard`
-- [ ] Log in → lands on `/dashboard`
-- [ ] Forgot password → reset email arrives → new password works
+- [ ] Sign in with Google → lands on `/dashboard`
+- [ ] Sign out → redirected to `/login`
 - [ ] Type in an entry → "Saving..." then "Saved ✓" appears → hard-refresh → content preserved
 - [ ] Navigate two months forward and back on the calendar
 - [ ] Click a date → entry page opens for that date
 - [ ] Paste a YouTube URL → embed renders
+- [ ] Record a short webcam video → uploads to Drive → preview iframe appears
+- [ ] Delete entry content → navigate back → dot disappears from calendar
 - [ ] Open two browsers as different users → each user sees only their own entries
 - [ ] Navigate to `/entry/not-a-date` → 404 page
 

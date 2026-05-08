@@ -12,7 +12,7 @@ export default async function DashboardPage() {
     .from('journal_entries')
     .select('entry_date')
     .eq('user_id', user?.id ?? '')
-    .or('content.not.is.null,video_url.not.is.null')
+    .or('content.not.is.null,video_url.not.is.null,recorded_video_drive_id.not.is.null')
 
   const entryDates = (entries ?? []).map(e => e.entry_date as string)
 

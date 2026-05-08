@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-
 import dynamic from 'next/dynamic'
 import { useDebouncedCallback } from 'use-debounce'
 import { createClient } from '@/lib/supabase/client'
@@ -9,20 +8,31 @@ import SaveIndicator from '@/components/ui/SaveIndicator'
 import VideoEmbed from '@/components/journal/VideoEmbed'
 
 const VoiceRecorder = dynamic(() => import('@/components/journal/VoiceRecorder'), { ssr: false })
+const VideoRecorder = dynamic(() => import('@/components/journal/VideoRecorder'), { ssr: false })
 
 interface EntryEditorProps {
   initialContent: string | null
   initialVideoUrl: string | null
+  initialDriveVideoId: string | null
+  hasDriveConnected: boolean
   userId: string
   date: string
 }
 
-export default function EntryEditor({ initialContent, initialVideoUrl, userId, date }: EntryEditorProps) {
+export default function EntryEditor({
+  initialContent,
+  initialVideoUrl,
+  initialDriveVideoId,
+  hasDriveConnected,
+  userId,
+  date,
+}: EntryEditorProps) {
   const [content, setContent] = useState(initialContent ?? '')
   const [videoUrl, setVideoUrl] = useState(initialVideoUrl ?? '')
+  const [driveVideoId, setDriveVideoId] = useState(initialDriveVideoId ?? null)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
   const isFirstRender = useRef(true)
-  const hadContent = useRef(!!(initialContent || initialVideoUrl))
+  const hadContent = useRef(!!(initialContent || initialVideoUrl || initialDriveVideoId))
 
   const save = useDebouncedCallback(async (currentContent: string, currentVideoUrl: string) => {
     setSaveStatus('saving')
@@ -49,12 +59,12 @@ export default function EntryEditor({ initialContent, initialVideoUrl, userId, d
     }
     hadContent.current = true
     save(content, videoUrl)
-  }, [content, videoUrl])
+  }, [content, videoUrl, save])
 
   async function handleBack() {
     const supabase = createClient()
     save.cancel()
-    if (!content && !videoUrl) {
+    if (!content && !videoUrl && !driveVideoId) {
       if (hadContent.current) {
         await supabase.from('journal_entries')
           .delete()
@@ -83,6 +93,15 @@ export default function EntryEditor({ initialContent, initialVideoUrl, userId, d
       const separator = prevTrimmed.length === 0 ? '' : lastChar === '\n' ? '' : ' '
       return prevTrimmed + separator + word
     })
+  }
+
+  function handleVideoSaved(driveId: string) {
+    setDriveVideoId(driveId)
+    hadContent.current = true
+  }
+
+  function handleVideoDeleted() {
+    setDriveVideoId(null)
   }
 
   return (
@@ -131,6 +150,19 @@ export default function EntryEditor({ initialContent, initialVideoUrl, userId, d
           }}
         />
         <VideoEmbed url={videoUrl} />
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium uppercase tracking-widest mb-2" style={{ color: '#C8A19C', opacity: 0.5 }}>
+          Recorded video
+        </label>
+        <VideoRecorder
+          date={date}
+          existingDriveId={driveVideoId}
+          hasDriveConnected={hasDriveConnected}
+          onVideoSaved={handleVideoSaved}
+          onVideoDeleted={handleVideoDeleted}
+        />
       </div>
     </div>
   )

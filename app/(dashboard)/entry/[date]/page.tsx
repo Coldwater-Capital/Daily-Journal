@@ -21,9 +21,16 @@ export default async function EntryPage({ params }: EntryPageProps) {
 
   const { data: entry } = await supabase
     .from('journal_entries')
-    .select('*')
+    .select('content, video_url, recorded_video_drive_id')
     .eq('user_id', user.id)
     .eq('entry_date', date)
+    .single()
+
+  // Check if this user has Google Drive connected
+  const { data: tokens } = await supabase
+    .from('user_google_tokens')
+    .select('user_id')
+    .eq('user_id', user.id)
     .single()
 
   return (
@@ -32,6 +39,8 @@ export default async function EntryPage({ params }: EntryPageProps) {
       <EntryEditor
         initialContent={entry?.content ?? null}
         initialVideoUrl={entry?.video_url ?? null}
+        initialDriveVideoId={entry?.recorded_video_drive_id ?? null}
+        hasDriveConnected={!!tokens}
         userId={user.id}
         date={date}
       />

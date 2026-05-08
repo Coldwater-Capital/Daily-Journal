@@ -9,7 +9,7 @@ interface VoiceRecorderProps {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyRecognition = any
 
-function processTranscript(text: string): string {
+export function processTranscript(text: string): string {
   const punctuationMap: Record<string, string> = {
     ' period': '.', ' comma': ',', ' question mark': '?',
     ' exclamation point': '!', ' exclamation mark': '!',
@@ -25,6 +25,8 @@ function processTranscript(text: string): string {
   // Capitalize after sentence-ending punctuation within the same fragment
   result = result.replace(/([.!?]\s+)([a-z])/g, (_, punct, letter) => punct + letter.toUpperCase())
 
+  // Strip spaces immediately following a newline (artifact of word-boundary replacement)
+  result = result.replace(/\n +/g, '\n')
   result = result.trim()
   result = result.charAt(0).toUpperCase() + result.slice(1)
 

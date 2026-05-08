@@ -26,10 +26,12 @@ export async function middleware(request: NextRequest) {
   // MUST use getUser() not getSession() — getSession() can be spoofed
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isAuthRoute = ['/login', '/signup', '/reset-password', '/update-password']
+  const isAuthRoute = ['/login', '/signup', '/auth']
     .some(path => request.nextUrl.pathname.startsWith(path))
 
-  if (!user && !isAuthRoute) {
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api')
+
+  if (!user && !isAuthRoute && !isApiRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')) {

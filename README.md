@@ -40,3 +40,4 @@ npm run build      # Production build
 npm run lint       # ESLint
 npx tsc --noEmit   # TypeScript type check
 ```
+# Daily-Journal

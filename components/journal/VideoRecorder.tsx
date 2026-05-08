@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 
-type Status = 'idle' | 'requesting' | 'recording' | 'preview' | 'uploading' | 'deleting' | 'error'
+type Status = 'idle' | 'requesting' | 'recording' | 'preview' | 'saving' | 'deleting' | 'error'
 
 interface VideoRecorderProps {
   date: string
@@ -30,6 +30,31 @@ const dimText: React.CSSProperties = {
   fontSize: '13px',
 }
 
+function uploadWithProgress(
+  url: string,
+  body: FormData,
+  token: string,
+  onProgress: (pct: number) => void,
+): Promise<{ id: string }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url)
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(JSON.parse(xhr.responseText))
+      } else {
+        reject(new Error(`Drive upload failed (${xhr.status})`))
+      }
+    }
+    xhr.onerror = () => reject(new Error('Network error during upload'))
+    xhr.send(body)
+  })
+}
+
 export default function VideoRecorder({
   date,
   existingDriveId,
@@ -40,13 +65,14 @@ export default function VideoRecorder({
   const [status, setStatus] = useState<Status>('idle')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [uploadPct, setUploadPct] = useState(0)
   const liveVideoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const recorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
-  const mimeTypeRef = useRef<string>('video/webm')
+  // Holds the in-progress background upload promise
+  const uploadPromiseRef = useRef<Promise<{ id: string }> | null>(null)
 
-  // Attach live camera stream after recording video element mounts
   useEffect(() => {
     if (status === 'recording' && liveVideoRef.current && streamRef.current) {
       liveVideoRef.current.srcObject = streamRef.current
@@ -54,7 +80,6 @@ export default function VideoRecorder({
     }
   }, [status])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       streamRef.current?.getTracks().forEach(t => t.stop())
@@ -87,15 +112,19 @@ export default function VideoRecorder({
     setErrorMsg(null)
     setStatus('requesting')
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, max: 30 } },
+        audio: true,
+      })
       streamRef.current = stream
 
-      // Pick the best supported MIME type across Chrome and Safari
-      const candidates = ['video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4']
+      const candidates = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4']
       const mimeType = candidates.find(t => MediaRecorder.isTypeSupported(t)) ?? ''
-      mimeTypeRef.current = mimeType
 
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+      const recorder = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        videoBitsPerSecond: 800_000, // 800 Kbps — ~6 MB/min, good enough for journaling
+      })
       chunksRef.current = []
 
       recorder.ondataavailable = (e) => {
@@ -105,8 +134,28 @@ export default function VideoRecorder({
       recorder.onstop = () => {
         streamRef.current?.getTracks().forEach(t => t.stop())
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType })
-        const url = URL.createObjectURL(blob)
-        setPreviewUrl(url)
+        setPreviewUrl(URL.createObjectURL(blob))
+        setUploadPct(0)
+
+        // Start uploading in the background while the user reviews the preview
+        uploadPromiseRef.current = (async () => {
+          const token = await getAccessToken()
+          const ext = blob.type.includes('mp4') ? 'mp4' : 'webm'
+          const metadata = JSON.stringify({
+            name: `Journal Entry ${date}.${ext}`,
+            mimeType: blob.type,
+          })
+          const form = new FormData()
+          form.append('metadata', new Blob([metadata], { type: 'application/json' }))
+          form.append('file', blob)
+          return uploadWithProgress(
+            'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+            form,
+            token,
+            setUploadPct,
+          )
+        })()
+
         setStatus('preview')
       }
 
@@ -124,50 +173,29 @@ export default function VideoRecorder({
   }
 
   async function handleSave() {
-    if (!previewUrl) return
+    if (!uploadPromiseRef.current) return
     setErrorMsg(null)
-    setStatus('uploading')
+    setStatus('saving')
     try {
-      const token = await getAccessToken()
+      // Await the background upload — may already be complete
+      const { id: newDriveId } = await uploadPromiseRef.current
+      uploadPromiseRef.current = null
 
+      // Delete the old Drive file only after the new one is confirmed uploaded
       if (existingDriveId) {
+        const token = await getAccessToken()
         await deleteDriveFile(existingDriveId, token)
       }
-
-      const blob = await fetch(previewUrl).then(r => r.blob())
-      const ext = blob.type.includes('mp4') ? 'mp4' : 'webm'
-      const metadata = JSON.stringify({
-        name: `Journal Entry ${date}.${ext}`,
-        mimeType: blob.type,
-      })
-      const form = new FormData()
-      form.append('metadata', new Blob([metadata], { type: 'application/json' }))
-      form.append('file', blob)
-
-      const uploadRes = await fetch(
-        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: form,
-        }
-      )
-      if (!uploadRes.ok) {
-        const errBody = await uploadRes.json().catch(() => ({}))
-        const msg = errBody?.error?.message ?? errBody?.error ?? 'unknown'
-        throw new Error(`Drive upload failed (${uploadRes.status}): ${msg}`)
-      }
-      const { id: driveId } = await uploadRes.json()
 
       await fetch('/api/save-drive-video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ driveId, date }),
+        body: JSON.stringify({ driveId: newDriveId, date }),
       })
 
-      URL.revokeObjectURL(previewUrl)
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
       setPreviewUrl(null)
-      onVideoSaved(driveId)
+      onVideoSaved(newDriveId)
       setStatus('idle')
     } catch (err) {
       setErrorMsg((err instanceof Error ? err.message : 'Upload failed') + ' — your recording is still here.')
@@ -178,6 +206,16 @@ export default function VideoRecorder({
   function handleDiscard() {
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl(null)
+    // Best-effort cleanup: delete the background-uploaded file if it completed
+    uploadPromiseRef.current
+      ?.then(async ({ id }) => {
+        try {
+          const token = await getAccessToken()
+          await deleteDriveFile(id, token)
+        } catch {}
+      })
+      .catch(() => {})
+    uploadPromiseRef.current = null
     setStatus('idle')
   }
 
@@ -210,7 +248,7 @@ export default function VideoRecorder({
     )
   }
 
-  if (status === 'uploading') return <p style={dimText}>Uploading to your Drive…</p>
+  if (status === 'saving') return <p style={dimText}>Saving…</p>
   if (status === 'deleting') return <p style={dimText}>Deleting…</p>
   if (status === 'requesting') return <p style={dimText}>Requesting camera access…</p>
 
@@ -222,7 +260,7 @@ export default function VideoRecorder({
           muted
           playsInline
           className="w-full rounded-xl"
-          style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E' }}
+          style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E', transform: 'scaleX(-1)' }}
         />
         <button onClick={stopRecording} style={ghostBtn}>Stop recording</button>
       </div>
@@ -232,7 +270,6 @@ export default function VideoRecorder({
   if (status === 'preview' && previewUrl) {
     return (
       <div className="flex flex-col gap-2">
-        {/* key forces a fresh element whenever the URL changes */}
         <video
           key={previewUrl}
           src={previewUrl}
@@ -242,11 +279,20 @@ export default function VideoRecorder({
           className="w-full rounded-xl"
           style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E' }}
         />
-        {errorMsg && (
-          <p className="text-sm" style={{ color: '#ffb4ab' }}>{errorMsg}</p>
+        {/* Upload progress — visible while upload is running in the background */}
+        {uploadPct < 100 && (
+          <div className="flex flex-col gap-1">
+            <div style={{ background: '#1A1410', borderRadius: '4px', overflow: 'hidden', height: '3px' }}>
+              <div style={{ background: '#C8A19C', width: `${uploadPct}%`, height: '100%', transition: 'width 0.2s ease' }} />
+            </div>
+            <p style={{ ...dimText, fontSize: '11px' }}>Uploading in background… {uploadPct}%</p>
+          </div>
         )}
+        {errorMsg && <p className="text-sm" style={{ color: '#ffb4ab' }}>{errorMsg}</p>}
         <div className="flex gap-2">
-          <button onClick={handleSave} style={ghostBtn}>Save to my Drive</button>
+          <button onClick={handleSave} style={ghostBtn}>
+            {uploadPct < 100 ? `Save to my Drive (${uploadPct}%)` : 'Save to my Drive'}
+          </button>
           <button onClick={handleDiscard} style={{ ...ghostBtn, opacity: 0.5 }}>Discard</button>
         </div>
       </div>

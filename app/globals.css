@@ -25,8 +25,7 @@ body {
 }
 
 /* react-day-picker calendar styles */
-.rdp { --rdp-accent-color: transparent; --rdp-background-color: #1A1410; --rdp-today-color: transparent; }
-.rdp-root { background: #111111; border: 0.5px solid #91766E; border-radius: 14px; padding: 28px 32px; font-size: 15px; }
+.rdp-root { --rdp-accent-color: transparent; --rdp-background-color: #1A1410; --rdp-today-color: transparent; background: #111111; border: 0.5px solid #91766E; border-radius: 14px; padding: 28px 32px; font-size: 15px; }
 .rdp-month_caption { display: flex; justify-content: center; align-items: center; height: var(--rdp-nav-height); color: #F3ECE3; font-weight: 600; }
 .rdp-button_previous, .rdp-button_next { background: transparent !important; border: none !important; color: #C8A19C !important; cursor: pointer; padding: 0; }
 .rdp-button_previous:hover, .rdp-button_next:hover { opacity: 0.7; }

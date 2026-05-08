@@ -302,11 +302,13 @@ export default function VideoRecorder({
   if (existingDriveId) {
     return (
       <div className="flex flex-col gap-2">
-        <iframe
-          src={`https://drive.google.com/file/d/${existingDriveId}/preview`}
+        <video
+          key={existingDriveId}
+          src={`/api/drive-stream/${existingDriveId}`}
+          controls
+          playsInline
           className="w-full rounded-xl"
-          style={{ aspectRatio: '16/9', border: '0.5px solid #91766E' }}
-          allow="autoplay"
+          style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E' }}
         />
         <div className="flex gap-2">
           <button onClick={startRecording} style={ghostBtn}>Re-record</button>

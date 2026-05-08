@@ -41,3 +41,4 @@ npm run lint       # ESLint
 npx tsc --noEmit   # TypeScript type check
 ```
 # Daily-Journal
+# Daily-Journal

@@ -10,11 +10,12 @@ export default async function DashboardPage() {
 
   const { data: entries } = await supabase
     .from('journal_entries')
-    .select('entry_date')
+    .select('entry_date, content, video_url, recorded_video_drive_id')
     .eq('user_id', user?.id ?? '')
-    .or('content.not.is.null,video_url.not.is.null,recorded_video_drive_id.not.is.null')
 
-  const entryDates = (entries ?? []).map(e => e.entry_date as string)
+  const entryDates = (entries ?? [])
+    .filter(e => e.content || e.video_url || e.recorded_video_drive_id)
+    .map(e => e.entry_date as string)
 
   return (
     <div className="flex flex-col items-center gap-6">

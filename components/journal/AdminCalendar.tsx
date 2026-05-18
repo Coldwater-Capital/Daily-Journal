@@ -22,7 +22,7 @@ export default function AdminCalendar({ entryDates }: AdminCalendarProps) {
         modifiers={{ hasEntry: entryDateObjects }}
         modifiersClassNames={{ hasEntry: 'day-has-entry' }}
       />
-      <p className="mt-4 text-sm" style={{ color: '#C8A19C', opacity: 0.4 }}>Click any day to see every user's entry for that date</p>
+      <p className="mt-4 text-sm" style={{ color: '#C8A19C', opacity: 0.4 }}>Click any day to see every user&apos;s entry for that date</p>
     </div>
   )
 }

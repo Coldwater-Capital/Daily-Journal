@@ -103,10 +103,10 @@ export default function VoiceRecorder({ onTranscript }: VoiceRecorderProps) {
         padding: '8px 14px',
         fontSize: '12px',
         fontWeight: '500',
-        background: isListening ? '#2a0a0a' : '#1A1410',
-        border: `0.5px solid ${isListening ? '#C8A19C' : '#91766E'}`,
+        background: isListening ? '#FEE2E2' : 'white',
+        border: `1px solid ${isListening ? '#DC2626' : '#D4D4D4'}`,
         borderRadius: '8px',
-        color: isListening ? '#C8A19C' : '#F3ECE3',
+        color: isListening ? '#DC2626' : '#171717',
         cursor: 'pointer',
       }}
     >

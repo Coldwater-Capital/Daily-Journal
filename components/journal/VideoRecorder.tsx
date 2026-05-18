@@ -17,16 +17,15 @@ const ghostBtn: React.CSSProperties = {
   fontSize: '12px',
   fontWeight: '500',
   letterSpacing: '0.05em',
-  color: '#F3ECE3',
-  background: 'transparent',
-  border: '0.5px solid #91766E',
-  borderRadius: '6px',
+  color: '#171717',
+  background: 'white',
+  border: '1px solid #D4D4D4',
+  borderRadius: '8px',
   cursor: 'pointer',
 }
 
 const dimText: React.CSSProperties = {
-  color: '#C8A19C',
-  opacity: 0.5,
+  color: '#525252',
   fontSize: '13px',
 }
 
@@ -88,7 +87,7 @@ export default function VideoRecorder({
 
   if (!hasDriveConnected) {
     return (
-      <p className="text-sm" style={{ color: '#C8A19C', opacity: 0.4 }}>
+      <p className="text-sm text-neutral-500">
         Sign in with Google to record videos to your Drive.
       </p>
     )
@@ -260,7 +259,7 @@ export default function VideoRecorder({
           muted
           playsInline
           className="w-full rounded-xl"
-          style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E', transform: 'scaleX(-1)' }}
+          style={{ aspectRatio: '16/9', background: '#000', border: '1px solid #D4D4D4', transform: 'scaleX(-1)' }}
         />
         <button onClick={stopRecording} style={ghostBtn}>Stop recording</button>
       </div>
@@ -277,13 +276,13 @@ export default function VideoRecorder({
           playsInline
           autoPlay
           className="w-full rounded-xl"
-          style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E' }}
+          style={{ aspectRatio: '16/9', background: '#000', border: '1px solid #D4D4D4' }}
         />
         {/* Upload progress — visible while upload is running in the background */}
         {uploadPct < 100 && (
           <div className="flex flex-col gap-1">
-            <div style={{ background: '#1A1410', borderRadius: '4px', overflow: 'hidden', height: '3px' }}>
-              <div style={{ background: '#C8A19C', width: `${uploadPct}%`, height: '100%', transition: 'width 0.2s ease' }} />
+            <div style={{ background: '#E5E5E5', borderRadius: '4px', overflow: 'hidden', height: '3px' }}>
+              <div style={{ background: '#525252', width: `${uploadPct}%`, height: '100%', transition: 'width 0.2s ease' }} />
             </div>
             <p style={{ ...dimText, fontSize: '11px' }}>Uploading in background… {uploadPct}%</p>
           </div>
@@ -308,7 +307,7 @@ export default function VideoRecorder({
           controls
           playsInline
           className="w-full rounded-xl"
-          style={{ aspectRatio: '16/9', background: '#000', border: '0.5px solid #91766E' }}
+          style={{ aspectRatio: '16/9', background: '#000', border: '1px solid #D4D4D4' }}
         />
         <div className="flex gap-2">
           <button onClick={startRecording} style={ghostBtn}>Re-record</button>

@@ -108,8 +108,8 @@ export default function EntryEditor({
     <div className="flex flex-col gap-4">
       <button
         onClick={handleBack}
-        className="text-sm inline-block mb-0 hover:opacity-80 transition-opacity self-start"
-        style={{ color: '#C8A19C', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        className="text-sm inline-block mb-0 self-start text-neutral-600 hover:text-neutral-900 transition-colors"
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
       >
         ← Back to calendar
       </button>
@@ -123,17 +123,11 @@ export default function EntryEditor({
         value={content}
         onChange={e => setContent(e.target.value)}
         placeholder="Write your journal entry..."
-        className="w-full min-h-[400px] p-4 text-base leading-relaxed resize-y focus:outline-none"
-        style={{
-          background: '#111111',
-          border: '0.5px solid #91766E',
-          borderRadius: '10px',
-          color: '#F3ECE3',
-        }}
+        className="w-full min-h-[400px] p-4 text-base leading-relaxed resize-y focus:outline-none rounded-xl bg-white border border-neutral-300 text-neutral-900"
       />
 
       <div>
-        <label className="block text-xs font-medium uppercase tracking-widest mb-2" style={{ color: '#C8A19C', opacity: 0.5 }}>
+        <label className="block text-xs font-medium uppercase tracking-widest mb-2 text-neutral-500">
           Video link (YouTube, Vimeo, or Loom)
         </label>
         <input
@@ -141,19 +135,13 @@ export default function EntryEditor({
           value={videoUrl}
           onChange={e => setVideoUrl(e.target.value)}
           placeholder="https://youtube.com/watch?v=..."
-          className="w-full px-3 py-2 text-sm focus:outline-none"
-          style={{
-            background: '#111111',
-            border: '0.5px solid #91766E',
-            borderRadius: '8px',
-            color: '#F3ECE3',
-          }}
+          className="w-full px-3 py-2 text-sm focus:outline-none rounded-lg bg-white border border-neutral-300 text-neutral-900"
         />
         <VideoEmbed url={videoUrl} />
       </div>
 
       <div>
-        <label className="block text-xs font-medium uppercase tracking-widest mb-2" style={{ color: '#C8A19C', opacity: 0.5 }}>
+        <label className="block text-xs font-medium uppercase tracking-widest mb-2 text-neutral-500">
           Recorded video
         </label>
         <VideoRecorder

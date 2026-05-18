@@ -2,50 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #000000;
-  --foreground: #F3ECE3;
-  --surface: #111111;
-  --border: #91766E;
-  --accent: #C8A19C;
-  --hover: #1A1410;
-  --nav: #0A0A0A;
-}
-
 body {
-  color: var(--foreground);
-  background: var(--background);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #FAFAFA;
+  color: #171717;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-}
-
-/* react-day-picker calendar styles */
-.rdp-root { --rdp-accent-color: transparent; --rdp-background-color: #1A1410; --rdp-today-color: transparent; background: #111111; border: 0.5px solid #91766E; border-radius: 14px; padding: 28px 32px; font-size: 15px; }
-.rdp-month_caption { display: flex; justify-content: center; align-items: center; height: var(--rdp-nav-height); color: #F3ECE3; font-weight: 600; }
-.rdp-button_previous, .rdp-button_next { background: transparent !important; border: none !important; color: #C8A19C !important; cursor: pointer; padding: 0; }
-.rdp-button_previous:hover, .rdp-button_next:hover { opacity: 0.7; }
-.rdp-weekday { color: #C8A19C; opacity: 0.5; }
-.rdp-weekday abbr { text-decoration: none; }
-.rdp-day_button { color: #F3ECE3 !important; background: transparent !important; border: none !important; }
-.rdp-day_button:hover { background: #1A1410 !important; }
-.rdp-outside .rdp-day_button { opacity: 0.2; }
-.rdp-today .rdp-day_button { color: #C8A19C !important; font-weight: 700; }
-.rdp-today:not(.day-has-entry) .rdp-day_button::after { display: none !important; }
-.rdp-chevron { fill: #C8A19C !important; }
-.day-has-entry { position: relative; }
-.day-has-entry::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: #C8A19C;
 }

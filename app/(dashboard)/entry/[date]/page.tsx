@@ -34,8 +34,8 @@ export default async function EntryPage({ params }: EntryPageProps) {
     .single()
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-8 py-8">
-      <h1 className="text-2xl font-bold mb-6" style={{ color: '#F3ECE3' }}>{formatDateDisplay(date)}</h1>
+    <div className="w-full max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 text-neutral-900">{formatDateDisplay(date)}</h1>
       <EntryEditor
         initialContent={entry?.content ?? null}
         initialVideoUrl={entry?.video_url ?? null}

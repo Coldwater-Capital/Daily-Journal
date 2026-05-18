@@ -14,13 +14,12 @@ export default function Navbar() {
   }
 
   return (
-    <nav style={{ background: '#0A0A0A', borderBottom: '0.5px solid #91766E' }}>
-      <div className="w-full px-6 py-4 flex items-center justify-between">
-        <span style={{ color: '#F3ECE3' }} className="text-base font-semibold">Daily Journal</span>
+    <nav className="bg-white border-b border-neutral-200">
+      <div className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <span className="text-lg font-semibold text-neutral-900">Daily journal</span>
         <button
           onClick={handleLogout}
-          style={{ color: '#C8A19C' }}
-          className="text-sm hover:opacity-80 transition-opacity"
+          className="px-3 py-1.5 text-sm text-neutral-700 border border-neutral-300 rounded-md bg-white hover:bg-neutral-50 transition-colors"
         >
           Sign out
         </button>

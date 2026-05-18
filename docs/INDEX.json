@@ -43,6 +43,13 @@
       "entry_points": ["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "/api/drive-token", "/api/save-drive-video"]
     },
     {
+      "path": "docs/admin.md",
+      "title": "Admin Dashboard",
+      "summary": "Admin role table, RLS additions, SECURITY DEFINER RPCs, /admin calendar + day view, and the Drive-video proxy that streams other users' videos using their stored Google tokens.",
+      "source_files": ["supabase/migrations/004_admin.sql", "lib/admin.ts", "app/(dashboard)/admin/page.tsx", "app/(dashboard)/admin/[date]/page.tsx", "app/api/admin/video/[entryId]/route.ts", "components/journal/AdminCalendar.tsx", "app/(dashboard)/dashboard/page.tsx"],
+      "entry_points": ["/admin", "/admin/[date]", "/api/admin/video/[entryId]", "admin_users", "admin_all_entry_dates", "admin_entries_for_date", "isAdmin"]
+    },
+    {
       "path": "docs/operations.md",
       "title": "Operations",
       "summary": "Local dev setup, full manual setup checklist (Google Cloud, Supabase, GitHub, Vercel), post-deploy smoke tests, stack versions.",

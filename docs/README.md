@@ -11,6 +11,7 @@ A private journaling web app built with Next.js 14, Supabase, and Tailwind CSS. 
 | [frontend.md](frontend.md) | All components, auto-save logic, VoiceRecorder, video embed, utils |
 | [integrations.md](integrations.md) | Supabase setup, env vars, Web Speech API, Vercel env requirements |
 | [operations.md](operations.md) | Local dev, manual setup checklist, deploy steps, smoke tests |
+| [admin.md](admin.md) | Admin role, `/admin` calendar + day view, Drive video proxy |
 
 ## Start here if you want to...
 
@@ -22,3 +23,5 @@ A private journaling web app built with Next.js 14, Supabase, and Tailwind CSS. 
 | Find required environment variables | [integrations.md](integrations.md#supabase) |
 | Deploy to Vercel | [operations.md](operations.md#vercel) |
 | See what manual setup is still pending | [operations.md](operations.md#manual-setup-checklist-not-yet-done) |
+| Understand the admin dashboard | [admin.md](admin.md) |
+| Grant someone admin access | [admin.md](admin.md#how-to-grant-or-revoke-admin) |

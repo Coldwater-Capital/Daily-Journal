@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import AdminCalendar from './AdminCalendar'
 
@@ -31,8 +31,35 @@ type Mode = 'calendar' | 'list'
 type Grouping = 'day' | 'user'
 
 export default function AdminView({ entryDates, allEntries, users }: AdminViewProps) {
+  const today = new Date()
   const [mode, setMode] = useState<Mode>('calendar')
   const [grouping, setGrouping] = useState<Grouping>('day')
+  const [viewYear, setViewYear] = useState(today.getFullYear())
+  const [viewMonth, setViewMonth] = useState(today.getMonth())
+
+  const monthName = new Date(viewYear, viewMonth, 1).toLocaleString('en-US', { month: 'long' })
+  const prefix = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-`
+
+  const monthDates = useMemo(() => {
+    return Array.from(new Set(entryDates.filter(d => d.startsWith(prefix)))).sort()
+  }, [entryDates, prefix])
+
+  const entriesByDate = useMemo(() => {
+    const map = new Map<string, AdminEntryRow[]>()
+    for (const e of allEntries) {
+      if (!map.has(e.entry_date)) map.set(e.entry_date, [])
+      map.get(e.entry_date)!.push(e)
+    }
+    return map
+  }, [allEntries])
+
+  function shiftMonth(delta: number) {
+    const next = new Date(viewYear, viewMonth + delta, 1)
+    setViewYear(next.getFullYear())
+    setViewMonth(next.getMonth())
+  }
+
+  const showMonthNav = mode === 'list' && grouping === 'day'
 
   return (
     <div className="flex flex-col gap-4">
@@ -66,6 +93,28 @@ export default function AdminView({ entryDates, allEntries, users }: AdminViewPr
         </div>
       </div>
 
+      {showMonthNav && (
+        <div className="flex items-center gap-2 self-start">
+          <button
+            onClick={() => shiftMonth(-1)}
+            className="w-9 h-9 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 flex items-center justify-center"
+            aria-label="Previous month"
+          >
+            <span className="text-neutral-600">‹</span>
+          </button>
+          <h2 className="text-lg font-semibold text-neutral-900 min-w-[150px] text-center">
+            {monthName}&nbsp;&nbsp;{viewYear}
+          </h2>
+          <button
+            onClick={() => shiftMonth(1)}
+            className="w-9 h-9 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 flex items-center justify-center"
+            aria-label="Next month"
+          >
+            <span className="text-neutral-600">›</span>
+          </button>
+        </div>
+      )}
+
       {mode === 'calendar' && (
         <>
           <div className="flex justify-center">
@@ -77,55 +126,49 @@ export default function AdminView({ entryDates, allEntries, users }: AdminViewPr
         </>
       )}
 
-      {mode === 'list' && grouping === 'day' && <ByDayList entries={allEntries} />}
+      {mode === 'list' && grouping === 'day' && (
+        <ByDayList dates={monthDates} entriesByDate={entriesByDate} />
+      )}
       {mode === 'list' && grouping === 'user' && <ByUserList users={users} />}
     </div>
   )
 }
 
-function ByDayList({ entries }: { entries: AdminEntryRow[] }) {
-  if (entries.length === 0) {
-    return <p className="text-sm text-neutral-500 text-center py-8">No entries from any user yet.</p>
+function ByDayList({
+  dates,
+  entriesByDate,
+}: {
+  dates: string[]
+  entriesByDate: Map<string, AdminEntryRow[]>
+}) {
+  if (dates.length === 0) {
+    return <p className="text-sm text-neutral-500 text-center py-8">No entries this month.</p>
   }
-
-  const groups = new Map<string, AdminEntryRow[]>()
-  for (const e of entries) {
-    if (!groups.has(e.entry_date)) groups.set(e.entry_date, [])
-    groups.get(e.entry_date)!.push(e)
-  }
-
-  const sortedDates = Array.from(groups.keys()).sort((a, b) => b.localeCompare(a))
 
   return (
-    <div className="flex flex-col gap-6">
-      {sortedDates.map(date => {
+    <ul className="flex flex-col gap-2">
+      {dates.map(date => {
         const d = new Date(date + 'T00:00:00')
-        const label = d.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+        const dayName = d.toLocaleString('en-US', { weekday: 'short' })
+        const dateLabel = d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        const count = entriesByDate.get(date)?.length ?? 0
         return (
-          <section key={date}>
-            <Link
-              href={`/admin/${date}`}
-              className="text-sm font-semibold text-neutral-900 hover:underline"
-            >
-              {label}
-            </Link>
-            <ul className="mt-2 flex flex-col gap-1.5">
-              {groups.get(date)!.map(entry => {
-                const snippet = (entry.content ?? '').replace(/\s+/g, ' ').trim().slice(0, 80)
-                return (
-                  <li key={entry.entry_id} className="flex items-baseline gap-3">
-                    <span className="text-xs text-neutral-500 w-44 shrink-0 truncate">{entry.user_email}</span>
-                    <span className="text-sm text-neutral-600 truncate">
-                      {snippet || <span className="italic text-neutral-400">no text</span>}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
+          <Link
+            key={date}
+            href={`/admin/${date}`}
+            className="flex items-baseline justify-between px-4 py-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 transition-colors"
+          >
+            <span className="flex items-baseline gap-3">
+              <span className="text-sm font-medium text-neutral-500 w-12 shrink-0">{dayName}</span>
+              <span className="text-sm font-medium text-neutral-900">{dateLabel}</span>
+            </span>
+            <span className="text-xs text-neutral-500">
+              {count} {count === 1 ? 'entry' : 'entries'}
+            </span>
+          </Link>
         )
       })}
-    </div>
+    </ul>
   )
 }
 

@@ -6,6 +6,8 @@ import { useDebouncedCallback } from 'use-debounce'
 import { createClient } from '@/lib/supabase/client'
 import SaveIndicator from '@/components/ui/SaveIndicator'
 import VideoEmbed from '@/components/journal/VideoEmbed'
+import InlineExtras from '@/components/journal/InlineExtras'
+import type { ExtraItem } from '@/lib/extras'
 
 const VoiceRecorder = dynamic(() => import('@/components/journal/VoiceRecorder'), { ssr: false })
 const VideoRecorder = dynamic(() => import('@/components/journal/VideoRecorder'), { ssr: false })
@@ -14,6 +16,8 @@ interface EntryEditorProps {
   initialContent: string | null
   initialVideoUrl: string | null
   initialDriveVideoId: string | null
+  initialHighlights: ExtraItem[]
+  initialSkills: ExtraItem[]
   hasDriveConnected: boolean
   userId: string
   date: string
@@ -23,6 +27,8 @@ export default function EntryEditor({
   initialContent,
   initialVideoUrl,
   initialDriveVideoId,
+  initialHighlights,
+  initialSkills,
   hasDriveConnected,
   userId,
   date,
@@ -113,6 +119,24 @@ export default function EntryEditor({
       >
         ← Back to calendar
       </button>
+
+      <InlineExtras
+        kind="highlights"
+        label="Highlights"
+        addLabel="Add highlight"
+        userId={userId}
+        date={date}
+        initial={initialHighlights}
+      />
+
+      <InlineExtras
+        kind="skills"
+        label="New skills"
+        addLabel="Add a new skill"
+        userId={userId}
+        date={date}
+        initial={initialSkills}
+      />
 
       <div className="flex items-center justify-between">
         <VoiceRecorder onTranscript={handleTranscript} />

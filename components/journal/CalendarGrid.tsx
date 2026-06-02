@@ -6,18 +6,34 @@ import { WEEK_ROW_PALETTE } from '@/lib/palette'
 
 interface CalendarGridProps {
   entryDates: string[]
+  starDates?: string[]
   routeBase: string
+  viewYear?: number
+  viewMonth?: number
+  onMonthChange?: (year: number, month: number) => void
+  hideNav?: boolean
 }
 
 const WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA']
 
-export default function CalendarGrid({ entryDates, routeBase }: CalendarGridProps) {
+export default function CalendarGrid({
+  entryDates,
+  starDates,
+  routeBase,
+  viewYear: viewYearProp,
+  viewMonth: viewMonthProp,
+  onMonthChange,
+  hideNav,
+}: CalendarGridProps) {
   const router = useRouter()
   const today = new Date()
-  const [viewYear, setViewYear] = useState(today.getFullYear())
-  const [viewMonth, setViewMonth] = useState(today.getMonth())
+  const [internalYear, setInternalYear] = useState(today.getFullYear())
+  const [internalMonth, setInternalMonth] = useState(today.getMonth())
+  const viewYear = viewYearProp ?? internalYear
+  const viewMonth = viewMonthProp ?? internalMonth
 
   const entrySet = new Set(entryDates)
+  const starSet = new Set(starDates ?? [])
   const todayStr = ymd(today)
 
   const weeks = buildMonthGrid(viewYear, viewMonth)
@@ -25,31 +41,37 @@ export default function CalendarGrid({ entryDates, routeBase }: CalendarGridProp
 
   function shiftMonth(delta: number) {
     const next = new Date(viewYear, viewMonth + delta, 1)
-    setViewYear(next.getFullYear())
-    setViewMonth(next.getMonth())
+    if (onMonthChange) {
+      onMonthChange(next.getFullYear(), next.getMonth())
+    } else {
+      setInternalYear(next.getFullYear())
+      setInternalMonth(next.getMonth())
+    }
   }
 
   return (
     <div className="w-full max-w-3xl">
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={() => shiftMonth(-1)}
-          className="w-9 h-9 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 flex items-center justify-center"
-          aria-label="Previous month"
-        >
-          <span className="text-neutral-600">‹</span>
-        </button>
-        <h2 className="text-lg font-semibold text-neutral-900">
-          {monthName}&nbsp;&nbsp;{viewYear}
-        </h2>
-        <button
-          onClick={() => shiftMonth(1)}
-          className="w-9 h-9 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 flex items-center justify-center"
-          aria-label="Next month"
-        >
-          <span className="text-neutral-600">›</span>
-        </button>
-      </div>
+      {!hideNav && (
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => shiftMonth(-1)}
+            className="w-9 h-9 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 flex items-center justify-center"
+            aria-label="Previous month"
+          >
+            <span className="text-neutral-600">‹</span>
+          </button>
+          <h2 className="text-lg font-semibold text-neutral-900">
+            {monthName}&nbsp;&nbsp;{viewYear}
+          </h2>
+          <button
+            onClick={() => shiftMonth(1)}
+            className="w-9 h-9 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50 flex items-center justify-center"
+            aria-label="Next month"
+          >
+            <span className="text-neutral-600">›</span>
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-7 gap-2 mb-2">
         {WEEKDAYS.map(d => (
@@ -68,6 +90,7 @@ export default function CalendarGrid({ entryDates, routeBase }: CalendarGridProp
                 const dateStr = ymd(cell.date)
                 const isToday = dateStr === todayStr
                 const hasEntry = entrySet.has(dateStr)
+                const hasStar = starSet.has(dateStr)
                 const inMonth = cell.inMonth
 
                 return (
@@ -84,6 +107,15 @@ export default function CalendarGrid({ entryDates, routeBase }: CalendarGridProp
                     }}
                   >
                     <span className="text-base font-medium">{cell.date.getDate()}</span>
+                    {hasStar && (
+                      <span
+                        className="absolute text-amber-500"
+                        style={{ top: '4px', right: '6px', fontSize: '11px', lineHeight: 1 }}
+                        aria-label="Has highlight"
+                      >
+                        ★
+                      </span>
+                    )}
                     {hasEntry && (
                       <span
                         className="absolute"

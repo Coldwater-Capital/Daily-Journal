@@ -52,8 +52,8 @@ export default async function EntryPage({ params }: EntryPageProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-neutral-900">{formatDateDisplay(date)}</h1>
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-neutral-900">{formatDateDisplay(date)}</h1>
         <div className="flex items-center gap-2">
           {prev ? (
             <Link

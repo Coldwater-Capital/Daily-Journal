@@ -73,7 +73,7 @@ export default function CalendarGrid({
         </div>
       )}
 
-      <div className="grid grid-cols-7 gap-2 mb-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2">
         {WEEKDAYS.map(d => (
           <div key={d} className="text-center text-xs font-medium tracking-wider text-neutral-500">
             {d}
@@ -81,11 +81,11 @@ export default function CalendarGrid({
         ))}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1 sm:gap-2">
         {weeks.map((week, rowIdx) => {
           const palette = WEEK_ROW_PALETTE[Math.min(rowIdx, WEEK_ROW_PALETTE.length - 1)]
           return (
-            <div key={rowIdx} className="grid grid-cols-7 gap-2">
+            <div key={rowIdx} className="grid grid-cols-7 gap-1 sm:gap-2">
               {week.map((cell, colIdx) => {
                 const dateStr = ymd(cell.date)
                 const isToday = dateStr === todayStr
@@ -106,7 +106,7 @@ export default function CalendarGrid({
                       opacity: inMonth ? 1 : 0.35,
                     }}
                   >
-                    <span className="text-base font-medium">{cell.date.getDate()}</span>
+                    <span className="text-sm sm:text-base font-medium">{cell.date.getDate()}</span>
                     {hasStar && (
                       <span
                         className="absolute text-amber-500"

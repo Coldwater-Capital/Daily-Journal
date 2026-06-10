@@ -263,10 +263,10 @@ function ByUserList({ users }: { users: AdminUserRow[] }) {
           <Link
             key={u.user_id}
             href={`/admin/user/${u.user_id}`}
-            className="flex items-baseline justify-between px-4 py-3 rounded-lg border transition-opacity hover:opacity-90"
+            className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 px-4 py-3 rounded-lg border transition-opacity hover:opacity-90"
             style={{ background: c.bg, borderColor: c.border, color: c.text }}
           >
-            <span className="text-sm font-semibold">{u.user_email}</span>
+            <span className="text-sm font-semibold break-all">{u.user_email}</span>
             <span className="text-xs opacity-80">
               {u.entry_count} entries · {u.highlight_count} highlights · {u.skill_count} skills
               {u.last_entry_date && ` · last ${u.last_entry_date}`}
